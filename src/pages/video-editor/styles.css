@@ -1,0 +1,7 @@
+.container-wrapper {
+  padding: 2rem;
+}
+.container-wrapper > h2 {
+  padding: 1rem;
+  color: var(--white);
+}

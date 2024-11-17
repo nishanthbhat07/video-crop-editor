@@ -16,9 +16,22 @@ export const VideoProvider = ({ children }) => {
     width: 100,
     height: 100,
   })
-  const [aspectRatio, setAspectRatio] = useState(16 / 9)
+  const [aspectRatio, setAspectRatio] = useState(9 / 18)
   const [currentTime, setCurrentTime] = useState(0)
   const [duration, setDuration] = useState(0)
+  const [recordings, setRecordings] = useState([])
+  const [isRecording, setIsRecording] = useState(false)
+
+  const [cropperState, setCropperState] = useState(() => {
+    const height = videoDimensions.height
+    const width = height * aspectRatio
+    return {
+      top: 0,
+      left: (videoDimensions.width - width) / 2,
+      width,
+      height,
+    }
+  })
 
   // Functions
   const handleMouseMove = e => {
@@ -27,6 +40,7 @@ export const VideoProvider = ({ children }) => {
       const rect = progressBar.getBoundingClientRect()
       const pos = Math.min(Math.max(0, (e.pageX - rect.left) / rect.width), 1)
       videoRef.current.currentTime = pos * videoRef.current.duration
+      previewRef.current.currentTime = pos * previewRef.current.duration
     }
   }
 
@@ -36,11 +50,11 @@ export const VideoProvider = ({ children }) => {
   const togglePlay = () => {
     if (videoRef.current.paused) {
       videoRef.current.play()
-      previewRef.current.play()
+      if (previewRef.current) previewRef.current.play()
       setIsPlaying(true)
     } else {
       videoRef.current.pause()
-      previewRef.current.pause()
+      if (previewRef.current) previewRef.current.pause()
       setIsPlaying(false)
     }
   }
@@ -76,6 +90,75 @@ export const VideoProvider = ({ children }) => {
     setAspectRatio(newRatio)
   }
 
+  const startRecording = () => {
+    setRecordings([
+      {
+        timeStamp: videoRef.current.currentTime,
+        coordinates: [
+          cropperState.left,
+          cropperState.top,
+          cropperState.width,
+          cropperState.height,
+        ],
+        volume: videoRef.current.volume,
+        playbackRate: videoRef.current.playbackRate,
+      },
+    ])
+    setIsRecording(true)
+  }
+
+  const stopRecording = () => {
+    setIsRecording(false)
+  }
+
+  const recordCurrentState = () => {
+    if (!isRecording || !videoRef.current) return
+
+    const newRecording = {
+      timeStamp: videoRef.current.currentTime,
+      coordinates: [
+        cropperState.left,
+        cropperState.top,
+        cropperState.width,
+        cropperState.height,
+      ],
+      volume: videoRef.current.volume,
+      playbackRate: videoRef.current.playbackRate,
+    }
+
+    console.log(newRecording)
+
+    setRecordings(prev => [...prev, newRecording])
+  }
+
+  const downloadRecordings = () => {
+    const dataStr = JSON.stringify(recordings, null, 2)
+    const dataBlob = new Blob([dataStr], { type: 'application/json' })
+    const url = URL.createObjectURL(dataBlob)
+    const link = document.createElement('a')
+    link.download = 'video-recordings.json'
+    link.href = url
+    link.click()
+    URL.revokeObjectURL(url)
+    setRecordings([])
+  }
+
+  const handleCancel = () => {
+    setRecordings([])
+    setIsRecording(false)
+    setAspectRatio(9 / 18)
+    setCropperState(() => {
+      const height = videoDimensions.height
+      const width = height * aspectRatio
+      return {
+        top: 0,
+        left: (videoDimensions.width - width) / 2,
+        width,
+        height,
+      }
+    })
+  }
+
   // Effects
   useEffect(() => {
     const handleSpaceBar = e => {
@@ -87,6 +170,7 @@ export const VideoProvider = ({ children }) => {
     const video = videoRef.current
     const handleLoadedMetadata = () => {
       setDuration(video.duration)
+      setCropperState(prev => ({ ...prev }))
       setVideoDimensions({
         width: video.videoWidth,
         height: video.videoHeight,
@@ -130,6 +214,15 @@ export const VideoProvider = ({ children }) => {
     handleMouseDown,
     togglePlay,
     handleTimeUpdate,
+    recordings,
+    isRecording,
+    startRecording,
+    stopRecording,
+    downloadRecordings,
+    recordCurrentState,
+    cropperState,
+    setCropperState,
+    handleCancel,
   }
 
   return (

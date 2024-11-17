@@ -10,19 +10,19 @@ const formatTime = timeInSeconds => {
 }
 
 const playbackOptions = [
-  { value: 0.5, label: 'Playback speed 0.5x' },
-  { value: 1, label: 'Playback speed 1x' },
-  { value: 1.5, label: 'Playback speed 1.5x' },
-  { value: 2, label: 'Playback speed 2x' },
+  { value: 0.5, label: '0.5x' },
+  { value: 1, label: '1x' },
+  { value: 1.5, label: '1.5x' },
+  { value: 2, label: '2x' },
 ]
 
 const cropperAspectRatioOptions = [
-  { value: 9 / 18, label: 'Cropper Aspect Ratio 9:18' },
-  { value: 9 / 16, label: 'Cropper Aspect Ratio 9:16' },
-  { value: 4 / 3, label: 'Cropper Aspect Ratio 4:3' },
-  { value: 3 / 4, label: 'Cropper Aspect Ratio 3:4' },
-  { value: 1, label: 'Cropper Aspect Ratio 1:1' },
-  { value: 4 / 5, label: 'Cropper Aspect Ratio 4:5' },
+  { value: 9 / 18, label: '9:18' },
+  { value: 9 / 16, label: '9:16' },
+  { value: 4 / 3, label: '4:3' },
+  { value: 3 / 4, label: '3:4' },
+  { value: 1, label: '1:1' },
+  { value: 4 / 5, label: '4:5' },
 ]
 
 function VideoSettings() {
@@ -86,7 +86,9 @@ function VideoSettings() {
         >
           {playbackOptions.map(option => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {option.value === playbackRate
+                ? `Playback Rate ${option.label}`
+                : option.label}
             </option>
           ))}
         </select>
@@ -96,7 +98,9 @@ function VideoSettings() {
         >
           {cropperAspectRatioOptions.map(option => (
             <option key={option.value} value={option.value}>
-              {option.label}
+              {option.value === aspectRatio
+                ? `Cropper Aspect Ratio ${option.label}`
+                : option.label}
             </option>
           ))}
         </select>
