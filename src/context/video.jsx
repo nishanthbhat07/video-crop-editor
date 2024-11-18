@@ -196,6 +196,15 @@ export const VideoProvider = ({ children }) => {
     }
   }, [isDragging])
 
+  useEffect(() => {
+    if (isRecording) {
+      setTimeout(() => {
+        previewRef.current.currentTime = videoRef.current.currentTime
+        previewRef.current.play()
+      }, 0)
+    }
+  }, [isRecording])
+
   const contextValue = {
     videoRef,
     previewRef,
